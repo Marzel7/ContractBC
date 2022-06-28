@@ -163,4 +163,9 @@ contract CompoundERC20 {
             "repay failed"
         );
     }
+
+    // To receive ETH
+    receive() external payable {}
+
+    fallback() external payable {}
 }
