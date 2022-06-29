@@ -39,7 +39,8 @@ function frac(x, n, d) {
 const toWei = value => ethers.utils.parseEther(value.toString());
 const fromWei = value => ethers.utils.formatEther(typeof value === "string" ? value : value.toString());
 
-const formatToken = (decimals, value) => value / 10 ** decimals;
+const fromWei8 = (decimals, value) => (value == 0 ? 0 : value / 10 ** decimals);
+const toWei8 = (decimals, value) => value * 10 ** decimals;
 
 const getBalance = ethers.provider.getBalance;
 
@@ -52,5 +53,6 @@ module.exports = {
   toWei,
   fromWei,
   getBalance,
-  formatToken,
+  fromWei8,
+  toWei8,
 };

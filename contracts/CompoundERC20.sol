@@ -2,7 +2,11 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./interfaces/ICompound.sol";
+import "./interfaces/ICErc20.sol";
+import "./interfaces/ICEth.sol";
+import "./interfaces/IComptroller.sol";
+import "./interfaces/IPriceFeed.sol";
+
 import "hardhat/console.sol";
 
 contract CompoundERC20 {
@@ -12,13 +16,13 @@ contract CompoundERC20 {
     // redeem
 
     IERC20 public token;
-    CErc20 public cToken;
+    ICErc20 public cToken;
 
     event Log(string message, uint256 val);
 
     constructor(address _token, address _cToken) {
         token = IERC20(_token);
-        cToken = CErc20(_cToken);
+        cToken = ICErc20(_cToken);
     }
 
     function supply(uint256 _amount) external {
@@ -38,6 +42,7 @@ contract CompoundERC20 {
     {
         // Amount of current exchange rate from cToken to underlying
         exchangeRate = cToken.exchangeRateCurrent();
+
         // Amount added to you supply balance this block
         supplyRate = cToken.supplyRatePerBlock();
     }
@@ -60,15 +65,15 @@ contract CompoundERC20 {
 
     function redeem(uint256 _cTokenAmount) external {
         require(cToken.redeem(_cTokenAmount) == 0, "redeem failed");
-        // cToken.redeemUnderlying(underlying amount);
+        //cToken.redeemUnderlying(underlying amount);
     }
 
     // borrow and repay //
-    Comptroller public comptroller =
-        Comptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
+    IComptroller public comptroller =
+        IComptroller(0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B);
 
-    PriceFeed public priceFeed =
-        PriceFeed(0x922018674c12a7F0D394ebEEf9B58F186CdE13c1);
+    IPriceFeed public priceFeed =
+        IPriceFeed(0x922018674c12a7F0D394ebEEf9B58F186CdE13c1);
 
     // collateral
     function getCollateralFactor() external view returns (uint256) {
@@ -128,7 +133,7 @@ contract CompoundERC20 {
 
         // borrow 50% of max borrow
         uint256 amount = (maxBorrow * 50) / 100;
-        require(CErc20(_cTokenToBorrow).borrow(amount) == 0, "borrow failed");
+        require(ICErc20(_cTokenToBorrow).borrow(amount) == 0, "borrow failed");
     }
 
     // borrowed balance (includes interest)
@@ -137,7 +142,7 @@ contract CompoundERC20 {
         public
         returns (uint256)
     {
-        return CErc20(_cTokenBorrowed).borrowBalanceCurrent(address(this));
+        return ICErc20(_cTokenBorrowed).borrowBalanceCurrent(address(this));
     }
 
     // borrow rate
@@ -147,7 +152,7 @@ contract CompoundERC20 {
         returns (uint256)
     {
         // scaled up by 1e18
-        return CErc20(_cTokenBorrowed).borrowRatePerBlock();
+        return ICErc20(_cTokenBorrowed).borrowRatePerBlock();
     }
 
     // repay borrow
@@ -159,7 +164,7 @@ contract CompoundERC20 {
         IERC20(_tokenBorrowed).approve(_cTokenBorrowed, _amount);
         // _amount = 2 ** 256 - 1 means repay all
         require(
-            CErc20(_cTokenBorrowed).repayBorrow(_amount) == 0,
+            ICErc20(_cTokenBorrowed).repayBorrow(_amount) == 0,
             "repay failed"
         );
     }
