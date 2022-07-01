@@ -55,4 +55,5 @@ module.exports = {
   getBalance,
   fromWei8,
   toWei8,
+  cast,
 };

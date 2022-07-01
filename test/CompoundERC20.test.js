@@ -83,7 +83,7 @@ describe("CompoundERC20 deployment", function () {
     await wbtc.connect(signer).approve(compoundERC20.address, DEPOSIT_AMOUNT);
     let tx = await compoundERC20.connect(signer).supply(toWei8(8, 100), {gasLimit: 500000});
     let after = await snapshot(compoundERC20, wbtc, c_wbtc);
-    console.log(compoundWBTCBalance);
+    //console.log(compoundWBTCBalance);
 
     // check WBTC balances
     let whaleBalanceAfter = fromWei8(8, await wbtc.balanceOf(WHALE));
@@ -91,7 +91,7 @@ describe("CompoundERC20 deployment", function () {
     expect(whaleBalance).to.eq(whaleBalanceAfter + 100);
     // Why is this 0 ?
     expect(compoundWBTCBalance).to.eq(0);
-    console.log(compoundWBTCBalanceAfter);
+    //console.log(compoundWBTCBalanceAfter);
 
     console.log("");
     console.log("--- supply ---");
