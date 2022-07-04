@@ -60,8 +60,7 @@ beforeEach(async () => {
   tokenBorrow = await ethers.getContractAt(IERC20, TOKEN_BORROW, signer);
 
   const supplyBal = await tokenSupply.balanceOf(SUPPLY_WHALE);
-  console.log(`supply whale balance: ${supplyBal.div(String(pow(10, SUPPLY_DECIMALS)))}`);
-  console.log(SUPPLY_AMOUNT);
+  console.log(`suuply whale balance: ${supplyBal.div(String(pow(10, SUPPLY_DECIMALS)))}`);
   assert(supplyBal.gte(SUPPLY_AMOUNT), "bal < supply");
 
   await hre.network.provider.request({
@@ -81,15 +80,15 @@ const snapshot = async (testCompound, liquidator) => {
   const liquidated = await liquidator.callStatic.getSupplyBalance(C_TOKEN_SUPPLY);
 
   return {
-    colFactor: colFactor.div(10, 18 - 2),
-    supplied: fromWei8(8, supplied),
-    borrowed: borrowed,
-    price: price,
-    liquidity: fromWei8(14, liquidity) / 1000,
-    shortfall: shortfall,
-    closeFactor: closeFactor,
-    incentive: incentive,
-    liquidated: liquidated,
+    colFactor: colFactor.div(String(pow(10, 18 - 2))),
+    supplied: supplied.div(String(pow(10, SUPPLY_DECIMALS - 2))) / 100,
+    borrowed: borrowed.div(String(pow(10, BORROW_DECIMALS - 2))) / 100,
+    price: price.div(String(pow(10, 18 - 2))) / 100,
+    liquidity: liquidity.div(String(pow(10, 14))) / 10000,
+    shortfall: shortfall.div(String(pow(10, 14))) / 10000,
+    closeFactor: closeFactor.div(String(pow(10, 18 - 2))),
+    incentive: incentive.div(String(pow(10, 18 - 2))) / 100,
+    liquidated: liquidated.div(String(pow(10, SUPPLY_DECIMALS - 4))) / 10000,
   };
 };
 
@@ -101,8 +100,8 @@ describe("liquidation", async () => {
     await tokenSupply.connect(signer).approve(testCompound.address, SUPPLY_AMOUNT);
     (tx = await testCompound.connect(signer).supply(SUPPLY_AMOUNT)), {gasLimit: 500000};
     snap = await snapshot(testCompound, liquidator);
-    console.log(`----- supplied -----`);
-    console.log(`col factor: ${snap.colFactor}`);
+    console.log(`--- supplied ---`);
+    console.log(`col factor: ${snap.colFactor} %`);
     console.log(`supplied: ${snap.supplied}`);
     // enter market
     tx = await testCompound.connect(user1).enterMarket();
