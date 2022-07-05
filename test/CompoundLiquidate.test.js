@@ -25,9 +25,7 @@ const BORROW_DECIMALS = 18;
 
 let testCompound;
 let tokenSupply;
-let cTokenSupply;
 let tokenBorrow;
-let cTokenBorrow;
 let liquidator;
 let signer;
 let deployer;
