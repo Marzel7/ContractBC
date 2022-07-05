@@ -22,6 +22,9 @@ module.exports = {
   //   artifacts: "./src/artifacts",
   // },
   defaultNetwork: "localhost",
+  mocha: {
+    timeout: 100000000,
+  },
   solidity: "0.8.4",
   networks: {
     localhost: {

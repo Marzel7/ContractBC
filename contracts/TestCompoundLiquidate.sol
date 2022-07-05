@@ -59,7 +59,7 @@ contract TestCompoundLiquidate {
         view
         returns (uint256 liquidity, uint256 shortfall)
     {
-        // liquidity and shirtfall in USD scaled up by 1e18
+        // liquidity and shortfall in USD scaled up by 1e18
         (uint256 error, uint256 _liquidity, uint256 _shortfall) = comptroller
             .getAccountLiquidity(address(this));
         require(error == 0, "error");
