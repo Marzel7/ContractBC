@@ -8,8 +8,6 @@ By aggregating the supply of each user Compound offers significantly more liquid
 
 Individuals the hold Ether, or any token, can supply their tokens to the Compound protocol and earn interest without having to manage their asset of take speculative risks.
 
-`Δy= x+Δx / yΔx`
-
 ### borrowing assets
 
 Using cTokens as collateral, Compound users can seamlessly borrow from the protocol without having to negotiate terms or funding periods. The cost of borrowing for each market is determined by a floating interest rate set by market forces. Assets held by the protocol are used as collateral to borrow from the protocol. Each market has a collateral factor ranging from 0 to 1. Liquid, high-cap assets have a high collateral factor compared to illiquid, low-cap assets. This represents the perceived stability of an asset to borrow and lend against.
@@ -58,26 +56,17 @@ This branch consists of tests, ERC20 and CompoundERC20 and CompoundLiquidate con
 
 ### Tests
 
-`01-DEX.test.js`
+`CompoundERC20.test.js`
 
-We call the approve function on the ERC20 token to allow the exchange to spend our tokens.
+This test demonstrates how to earn interest from lending tokens to the Compound protocol. The CERC20 and IERC20 interfaces are used to interact with the C_Token and ERC20 contracts. The CToken and underlying ERC20 token addresses are passed into the constructor, followed by calling supply to lend tokens to the protocol.
 
-We can see that the DEX starts empty. Calling init() loads our contract up with 500 ETH and 500 Balloons. At this point, the ETH/BAL pool has a 1:1 ratio. Once liquidity has been deposited init() can only be called again if all liquidity has been removed.
+Calling the supply function transfers the amount of the underlying token specified. In return we receive an amount of C-Tokens representing how many C-Tokens can be withdrawn from the protocol. The exchange rate if undeerlying tokens to C-Tokens is calculated by:
 
-Eth is exchange for tokens by calling ethToToken(). Despite the 1:1 balance of the pool, the returned number of tokens varies depending on the size of the swap
+```
+exchangeRate = balanceOfUnderlying + totalBorrowBalance - reserves / cTokenSupply
+exchangeRate = 100 + 0 - 0 / 4983 = 0.020068231988762
+```
 
-` 1 ETH - 0.996006981039903216`
-` 10 ETH - 0.985199344233659966`
-` 100 ETH - 0.887894610225887842`
-
-This is smaller than expected. The constant product formula is in fact a hyperbola, thus the x any y axis cannot be crossed which makes reserves infinite. One implication of the formula is that the larger the swap, the fewer number of tokens returned - otherwise known as slippage.
-
-Tokens are exchanged for Eth by calling tokenToEth(). The pool is reset to a 1:1 ratio by withdrawing liquidity and recalling init()
-
-The amount of ETH returned varies on the size of the swap. The larger the swap the less ETH returned.
-
-`1 BAL - 0.993039757447300166`
-`10 BAL - 0.951296851599130328`
-`100 BAL - 0.66197812517710483`
+BalanceOfUnderlying returns the users C_Tokens amount, including any interest accrued over time. To withdraw the underlying asset redeem is called, passing in the requested amount of C_Tokens.
 
 ---
