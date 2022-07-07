@@ -60,13 +60,15 @@ This branch consists of tests, ERC20 and CompoundERC20 and CompoundLiquidate con
 
 This test demonstrates how to earn interest from lending tokens to the Compound protocol. The CERC20 and IERC20 interfaces are used to interact with the C_Token and ERC20 contracts. The CToken and underlying ERC20 token addresses are passed into the constructor, followed by calling supply to lend tokens to the protocol.
 
-Calling the supply function transfers the amount of the underlying token specified. In return we receive an amount of C-Tokens representing how many C-Tokens can be withdrawn from the protocol. The exchange rate if undeerlying tokens to C-Tokens is calculated by:
+Calling the supply function transfers the amount of the underlying token specified. In return we receive an amount of C-Tokens representing how many C-Tokens can be withdrawn from the protocol. The exchange rate of undeerlying tokens to C-Tokens is calculated by:
 
 ```
 exchangeRate = balanceOfUnderlying + totalBorrowBalance - reserves / cTokenSupply
 exchangeRate = 100 + 0 - 0 / 4983 = 0.020068231988762
 ```
 
-BalanceOfUnderlying returns the users C_Tokens amount, including any interest accrued over time. To withdraw the underlying asset redeem is called, passing in the requested amount of C_Tokens.
+The Tokens supplied accrue interest per block. The test simulates advancing 100 blocks to return the updated amount of the underlying asset.
+
+BalanceOfUnderlying returns the users underlying token amount, including any interest accrued over time. To withdraw the underlying asset redeem is called, passing in the requested amount of C_Tokens to redeem. The C-Tokens are burned by calling redeem in return of the underlying asset plus accrues feed.
 
 ---
