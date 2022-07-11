@@ -12,9 +12,9 @@ Individuals the hold Ether, or any token, can supply their tokens to the Compoun
 
 Using cTokens as collateral, Compound users can seamlessly borrow from the protocol without having to negotiate terms or funding periods. The cost of borrowing for each market is determined by a floating interest rate set by market forces. Assets held by the protocol are used as collateral to borrow from the protocol. Each market has a collateral factor ranging from 0 to 1. Liquid, high-cap assets have a high collateral factor compared to illiquid, low-cap assets. This represents the perceived stability of an asset to borrow and lend against.
 
-The sum of the value of an accounts underlying token balances, multiplied by the collateral factors, equals a users borrowing capacity. Users can borrow up to their borrowing capacity, but cannot take action (e.g transfer or redeem cToken collateral) to raise the total value of borrowed assets above the borrowing capacity.
+The sum of the value of an accounts underlying token balances, multiplied by the collateral factors, equals a user's borrowing capacity. Users can borrow up to their borrowing capacity but cannot take action (e.g transfer or redeem cToken collateral) to raise the total value of borrowed assets above the borrowing capacity.
 
-If an accounts borrowing amount exceeds their borrowing capacity, a portion of their borrowing may be repaid in exchange for the accounts cToken collateral, at the current market price minus a liquidation discount. This creates arbitrage opportunity to reduce the borrowers exposure, eliminating the protocols risk.
+If an accounts borrowing amount exceeds their borrowing capacity, a portion of their borrowing may be repaid in exchange for the accounts cToken collateral, at the current market price minus a liquidation discount. This creates arbitrage opportunity to reduce the borrower's exposure, eliminating the protocols risk.
 
 The close factor is the potion of the borrowed asset that can be repaid. The close factor ranges from 0 to 1 and liquidation may continue to be called until the users borrowing is less than their borrowing capacity. Any holder of the underlying asset can call the liquidation function in exchange for the borrowers cToken collateral.
 ​
@@ -33,7 +33,7 @@ As a result, borrowing interest rates resemble the following
 
 ### CToken contracts
 
-Users balances are represented as cToken balances. Users can mint cTokens by supplying assets to the market, or redeem cTokens for the underlying asset. The exchange rate between cTokens and the underlying asset increases over time, as interest is accrued by borrowers, and is equal to:
+Users balances are represented as cToken balances. Users can mint cTokens by supplying assets to the market or redeem cTokens for the underlying asset. The exchange rate between cTokens and the underlying asset increases over time, as interest is accrued by borrowers, and is equal to:
 
 `exchangeRate = underlyingBalance + totalBorrowBallance_a - reserves_a / cTokenSupply_a`
 
@@ -71,4 +71,34 @@ The Tokens supplied accrue interest per block. The test simulates advancing 100 
 
 BalanceOfUnderlying returns the users underlying token amount, including any interest accrued over time. To withdraw the underlying asset redeem is called, passing in the requested amount of C_Tokens to redeem. The C-Tokens are burned by calling redeem in return of the underlying asset plus accrues feed.
 
----
+`CompoundLiquidate.test.js`
+
+On Compound, if the borrowed amount exceeds the supplied collateral you're subject to liquidation. This allows another account to pay back a portion of the borrowed token and receive an amount of the supplied token at a discount.
+
+Close factor - The maximum percentage of the borrowed token that can be repaid.
+
+Liquidation incentive - When liquidate is called, a portion of the borrowed token is repaid in exchange for a portion of the token supplied as collateral. This is supplied at a discounted rate - liquidation incentive.
+
+In this example the TestCompoundLiquidate contract supplies WBTC as collateral in exchange for DAI. The CompoundLiquidator contract attempts to liquidate TestCompoundLiquidate once it's collateral is exceeded by it's borrowed amount.
+
+TestCompoundLiquidate supplies 1 WBTC into Compound, enters the market and borrows the maximum amount possible. The maximum amount is calculated as follows
+
+`liquidity * token price * col Factor`
+
+`1 WBTC * $1 * 70% = Max borrow amount`
+
+`£$21,104 * $1 * 70% = $14,390`
+
+When the borrowed amount is greater than supplied amount \* col factor TestCompoundLiquidate can be liquidated.
+
+Supplying 1 WBTC results in a maximum of $14,390 to borrow against. We borrow slightly less than the maximum reducing the liquidity to $25. After simulating 900 blocks interest has accrued and reduced the liquidity 0.
+
+A shortfall now exists - the contract that borrowed is now under collagenised by $9.6266
+
+Liquidate can now be called at a close factor of 50% with a liquidation incentive of %1.08.
+
+TestCompoundLiquidate is liquidated, it's borrowed amount is reduced by 50% to $7195.12, leaving a supply balance of 0.62 WBTC
+
+The liquidating address supplies $7195.12 DAI to receive 0.3676 WBTC at a discounted rate of %1.08
+
+The account supplying 1 WBTC initially received 50 C_WBTC. When liquidated, 18 C_WBTC tokens were transferred to the liquidating address.
