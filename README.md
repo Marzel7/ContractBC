@@ -6,7 +6,7 @@ Compound finance is a decentralised borrowing and lending protocol facilitating 
 
 By aggregating the supply of each user Compound offers significantly more liquidity than direct lending. Assets supplied to a market a represented by an ERC-20 token balance ('cToken). As the money market accrues interest, though borrowing demand, cTokens become convertible into an increasing amount of the underlying asset.
 
-Individuals the hold Ether, or any token, can supply their tokens to the Compound protocol and earn interest without having to manage their asset of take speculative risks.
+Individuals that hold Ether, or any token, can supply their tokens to the Compound protocol and earn interest without having to manage their asset of take speculative risks.
 
 ### borrowing assets
 
@@ -49,7 +49,9 @@ This branch consists of tests, ERC20 and CompoundERC20 and CompoundLiquidate con
 
 ` npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/$alchemyAIPkey`
 
-`hh test`
+`npx hardhat test ./test/CompoundERC20.test.js`
+`npx hardhat test ./test/CompoundLiquidate.test.js`
+`npx hardhat test ./test/CompoundLong.testjs`
 
 
 ```
