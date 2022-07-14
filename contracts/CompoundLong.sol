@@ -109,13 +109,6 @@ contract CompoundLong {
         // supplied ETH + supplied interest + profit (in token borrow)
     }
 
-    /// borrowed CTokens (100)
-    // Buy Eth  - 1000 Token 100
-    // Eth price goes up
-    // Sell Eth  - 2000 Token 200
-    // Repay borrowed tokens - 100
-    // redeem ???
-
     // not view function
     function getSuppliedBalance() external returns (uint256) {
         return cEth.balanceOfUnderlying(address(this));

@@ -104,3 +104,29 @@ TestCompoundLiquidate is liquidated, it's borrowed amount is reduced by 50% to $
 The liquidating address supplies $7195.12 DAI to receive 0.3676 WBTC at a discounted rate of %1.08
 
 The account supplying 1 WBTC initially received 50 C_WBTC. When liquidated, 18 C_WBTC tokens were transferred to the liquidating address.
+
+`CompoundLong.test.js`
+
+This contract facilitates borrowing DAI on compound followed by swapping borrowed DAI for ETH on Uniswap. The test then simulates time moving forward by 1000 blocks. By longing ETH we are betting that the ETH price has increased by the time this block is reached. The price of ETH needs to cover the loan and interest on the borrowed DAI. Uniswap is again used for the ETH/DAI swap, the DAI Compound loan is then paid bet - hopefully with profit.
+
+/\* Long ETH
+
+1. supply ETH
+2. borrow stable coin (DAI)
+3. buy ETH on Uniswap
+   when the price of ETH goes up...
+4. sell ETH on Uniswap
+5. repay borrowed stable coin
+   \*/
+
+To borrow DAI on Compound 100 ETH is supplied to our CompoundLong contract to mint cETH, resulting in an underlying balance of ~100 ETH and liquidity balance of 90462 cETH tokens. We can borrow against 100% of our liquidity. In this example the borrow percentage is determined by a utility function - frac
+
+`const borrowAmount = frac(String(maxBorrow), 50, 100);`
+
+Long() - Borrows DAI from Compound and immediately swaps it for ETH. As this two-step borrowing and swapping is within one call the logs don't show the borrowed DAI value before it's swapped to ETH. However, the borrowAmount does briefly result in 45196 DAI owner by the CompoundLong contract.
+
+`90462 liquidity * 50% = 45196`
+
+Uniswap trades DAI for ETH - there's approximately 41 ETH in the CompoundLong contract.
+
+Repay() - We've taken a long position on ETH. Let's presume that after 1000 blocks the ETH price has risen 20%. This is difficult to simulate so let's presume so. By calling repay() ETH is swapped back to DAI. The DAI loan plus accrued fees in paid back to Compound. CompoundLong contracts cDai and cEth are rebalanced to zero.

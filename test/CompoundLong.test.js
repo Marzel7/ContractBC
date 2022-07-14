@@ -24,17 +24,13 @@ let compoundLong;
 let tokenBorrow;
 let cTokenBorrow;
 let cETH;
-let signer;
 let ETH_WHALE;
-let deployer;
-let user1;
 let REPAY_WHALE_SIGNER;
 
 beforeEach(async () => {
   const accounts = await ethers.getSigners();
   ETH_WHALE = accounts[0];
   REPAY_WHALE_SIGNER = ethers.provider.getSigner(REPAY_WHALE);
-  signer = accounts[2];
 
   const CompoundLong = await ethers.getContractFactory("CompoundLong");
   compoundLong = await CompoundLong.deploy(CETH, C_TOKEN_BORROW, TOKEN_BORROW, 18);
@@ -66,6 +62,7 @@ const snapshot = async (compoundLong, tokenBorrow) => {
   const supplied = await compoundLong.callStatic.getSuppliedBalance();
   const borrowed = await compoundLong.callStatic.getBorrowedBalance();
   const {liquidity} = await compoundLong.getAccountLiquidity();
+  const cDAIBalance = await cTokenBorrow.callStatic.borrowBalanceCurrent(compoundLong.address);
 
   return {
     maxBorrow,
@@ -75,11 +72,21 @@ const snapshot = async (compoundLong, tokenBorrow) => {
     supplied,
     borrowed,
     liquidity,
+    cDAIBalance,
   };
 };
 
 describe("borrow, repay, redeem", async () => {
   it("should long", async () => {
+    console.log(`--- init ---`);
+    console.log(``);
+    console.log(`liquidity: ${await compoundLong.getAccountLiquidity()}`);
+    console.log(`supplied balance: ${await compoundLong.callStatic.getSuppliedBalance()}`);
+    console.log(`eth balance: ${await getBalance(compoundLong.address)}`);
+    console.log(`cEth balance: ${fromWei8(8, await cETH.balanceOf(compoundLong.address))}`);
+
+    console.log(``);
+
     let tx;
     let snap;
     // supply
@@ -91,12 +98,11 @@ describe("borrow, repay, redeem", async () => {
 
     // long
     snap = await snapshot(compoundLong, tokenBorrow);
+    console.log(`--- Supply, mint cETH ---`);
     console.log(``);
     console.log(`liquidity: ${fromWei(snap.liquidity)}`);
     console.log(`max borrow: ${fromWei(snap.maxBorrow)}`);
     console.log(`supplied balance: ${fromWei(snap.supplied)}`);
-    console.log(``);
-    console.log(`--- Supply, mint cETH ---`);
     console.log(``);
     console.log(`borrowed token balance: ${fromWei(snap.tokenBorrow)}`);
     console.log(`eth balance: ${snap.eth}`);
@@ -111,19 +117,31 @@ describe("borrow, repay, redeem", async () => {
     snap = await snapshot(compoundLong, tokenBorrow);
     console.log(`--- Exchange DAI for ETH ---`);
     console.log(``);
-
-    console.log(`borrowed token balance: ${(fromWei8, (8, snap.tokenBorrow))}`);
+    // DAI balance won't be available if Uniswap is called within long()
+    console.log(`borrowed token (DAI) balance: ${(fromWei8, (8, snap.tokenBorrow))}`);
     console.log(`supplied balance: ${fromWei(snap.supplied)}`);
     console.log(`eth balance: ${snap.eth}`);
+    console.log(`liquidity: ${fromWei(snap.liquidity)}`);
     console.log(`cEth balance: ${fromWei8(8, snap.cEthBalance)}`);
+    console.log(`cDAI balance: ${snap.cDAIBalance}`);
 
     // accrue interest on borrow
     const block = await web3.eth.getBlockNumber();
-    await time.advanceBlockTo(block + 100);
+    await time.advanceBlockTo(block + 1000);
 
     // repay
     await tokenBorrow.connect(REPAY_WHALE_SIGNER).transfer(compoundLong.address, BORROW_INTEREST);
-    console.log("CTOKEN", await cTokenBorrow.balanceOf(compoundLong.address));
     tx = await compoundLong.connect(ETH_WHALE).repay({gasLimit: 5000000});
+
+    snap = await snapshot(compoundLong, tokenBorrow);
+    console.log(``);
+    console.log(`--- Repay ---`);
+    console.log(``);
+    console.log(`liquidity : ${fromWei(snap.liquidity)}`);
+    console.log(`borrowed : ${fromWei(snap.borrowed)}`);
+    console.log(`eth balance: ${fromWei(snap.eth)}`);
+    console.log(`token borrow: ${fromWei(snap.tokenBorrow)}`);
+    console.log(`cEth balance: ${fromWei(snap.cEthBalance)}`);
+    console.log(`cDAI balance: ${snap.cDAIBalance}`);
   });
 });
