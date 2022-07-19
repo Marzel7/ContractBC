@@ -112,7 +112,7 @@ describe("borrow, repay, redeem", async () => {
 
     const borrowAmount = frac(String(maxBorrow), 50, 100);
     //console.log(`max borrow amount: ${fromWei(borrowAmount)}`);
-    (tx = await compoundLong.connect(ETH_WHALE).long(parseInt(fromWei(borrowAmount)))), {gasLimit: 5000000};
+    (tx = await compoundLong.connect(ETH_WHALE).long(parseInt(fromWei(borrowAmount)))), {amount: 10, gasLimit: 5000000};
 
     snap = await snapshot(compoundLong, tokenBorrow);
     console.log(`--- Exchange DAI for ETH ---`);

@@ -80,7 +80,7 @@ const snapshot = async (testCompound, liquidator) => {
   const liquidated = await liquidator.callStatic.getSupplyBalance(C_TOKEN_SUPPLY);
 
   return {
-    colFactor: colFactor.div(String(pow(10, 18 - 2))),
+    colFactor: colFactor.div(String(pow(10, 18 - 1))),
     supplied: supplied.div(String(pow(10, SUPPLY_DECIMALS - 2))) / 100,
     borrowed: borrowed.div(String(pow(10, BORROW_DECIMALS - 2))) / 100,
     price: price.div(String(pow(10, 18 - 2))) / 100,
@@ -131,34 +131,34 @@ describe("liquidation", async () => {
     console.log(`borrowed: $${snap.borrowed}`);
 
     // accrue interest on borrow
-    const block = await web3.eth.getBlockNumber();
-    // NOTE: tweak this to increase borrowed amount
-    await time.advanceBlockTo(block + 120000);
-    // send any tx to Compound to update liquidity and shortfall
-    await testCompound.getBorrowBalance();
+    // const block = await web3.eth.getBlockNumber();
+    // // NOTE: tweak this to increase borrowed amount
+    // await time.advanceBlockTo(block + 120000);
+    // // send any tx to Compound to update liquidity and shortfall
+    // await testCompound.getBorrowBalance();
 
-    snap = await snapshot(testCompound, liquidator);
-    console.log(`--- after some blocks ---`);
-    console.log(`liquidity: $${snap.liquidity}`);
-    console.log(`shortfall: $${snap.shortfall}`);
-    console.log(`borrowed: $${snap.borrowed}`);
+    // snap = await snapshot(testCompound, liquidator);
+    // console.log(`--- after some blocks ---`);
+    // console.log(`liquidity: $${snap.liquidity}`);
+    // console.log(`shortfall: $${snap.shortfall}`);
+    // console.log(`borrowed: $${snap.borrowed}`);
 
-    // liquidate
-    const closeFactor = await liquidator.getCloseFactor();
-    const repaymentAmount = await testCompound.callStatic.getBorrowBalance();
-    repayAmount = repaymentAmount.mul(closeFactor).div(String(pow(10, 18)));
+    // // liquidate
+    // const closeFactor = await liquidator.getCloseFactor();
+    // const repaymentAmount = await testCompound.callStatic.getBorrowBalance();
+    // repayAmount = repaymentAmount.mul(closeFactor).div(String(pow(10, 18)));
 
-    let liqBal = await tokenBorrow.balanceOf(LIQUIDATOR);
-    console.log("---- liquidation ----");
-    console.log(`liquidator DAI balance: ${liqBal.div(String(pow(10, BORROW_DECIMALS)))}`);
-    assert(liqBal.gte(repayAmount, "bal < repay"));
+    // let liqBal = await tokenBorrow.balanceOf(LIQUIDATOR);
+    // console.log("---- liquidation ----");
+    // console.log(`liquidator DAI balance: ${liqBal.div(String(pow(10, BORROW_DECIMALS)))}`);
+    // assert(liqBal.gte(repayAmount, "bal < repay"));
 
-    const amountToBeLiquidated = await liquidator.getAmountToBeLiquidated(C_TOKEN_BORROW, C_TOKEN_SUPPLY, repayAmount);
-    console.log(
-      `amount to be liquidated (cToken collateral):  ${
-        amountToBeLiquidated.div(String(pow(10, SUPPLY_DECIMALS - 2))) / 100
-      }`
-    );
+    // const amountToBeLiquidated = await liquidator.getAmountToBeLiquidated(C_TOKEN_BORROW, C_TOKEN_SUPPLY, repayAmount);
+    // console.log(
+    //   `amount to be liquidated (cToken collateral):  ${
+    //     amountToBeLiquidated.div(String(pow(10, SUPPLY_DECIMALS - 2))) / 100
+    //   }`
+    // );
 
     // supplyBal = await tokenSupply.balanceOf(SUPPLY_WHALE);
     // console.log(`supply whale balance: ${supplyBal.div(String(pow(10, SUPPLY_DECIMALS)))}`);
@@ -172,30 +172,30 @@ describe("liquidation", async () => {
     let testCompound_cWBTC_balance = await cTokenSupply.balanceOf(testCompound.address);
     console.log(`TestCompound cWBTC balance: ${testCompound_cWBTC_balance.div(String(pow(10, SUPPLY_DECIMALS)))}`);
 
-    await tokenBorrow.connect(signer_LIQUIDATOR).approve(liquidator.address, repayAmount);
-    tx = await liquidator.connect(signer_LIQUIDATOR).liquidate(testCompound.address, repayAmount, C_TOKEN_SUPPLY);
+    // await tokenBorrow.connect(signer_LIQUIDATOR).approve(liquidator.address, repayAmount);
+    // tx = await liquidator.connect(signer_LIQUIDATOR).liquidate(testCompound.address, repayAmount, C_TOKEN_SUPPLY);
 
-    snap = await snapshot(testCompound, liquidator);
-    console.log(`--- liquidate ---`);
-    console.log(`close factor: ${snap.closeFactor} %`);
-    console.log(`liquidation incentive: ${snap.incentive}`);
-    console.log(`supplied: ${snap.supplied}`);
-    console.log(`liquidity: $ ${snap.liquidity}`);
-    console.log(`shortfall: $ ${snap.shortfall}`);
-    console.log(`borrowed: ${snap.borrowed}`);
-    console.log(`liquidated: ${snap.liquidated}`);
+    // snap = await snapshot(testCompound, liquidator);
+    // console.log(`--- liquidate ---`);
+    // console.log(`close factor: ${snap.closeFactor} %`);
+    // console.log(`liquidation incentive: ${snap.incentive}`);
+    // console.log(`supplied: ${snap.supplied}`);
+    // console.log(`liquidity: $ ${snap.liquidity}`);
+    // console.log(`shortfall: $ ${snap.shortfall}`);
+    // console.log(`borrowed: ${snap.borrowed}`);
+    // console.log(`liquidated: ${snap.liquidated}`);
 
-    console.log(`---- balances ----`);
-    liqBal = await tokenBorrow.balanceOf(LIQUIDATOR);
-    console.log(`liquidator DAI balance: ${liqBal.div(String(pow(10, BORROW_DECIMALS)))}`);
+    // console.log(`---- balances ----`);
+    // liqBal = await tokenBorrow.balanceOf(LIQUIDATOR);
+    // console.log(`liquidator DAI balance: ${liqBal.div(String(pow(10, BORROW_DECIMALS)))}`);
 
-    liquidator_cWBTC_bal = await cTokenSupply.balanceOf(liquidator.address);
-    console.log(`liquidator cWBTC balance: ${liquidator_cWBTC_bal.div(String(pow(10, SUPPLY_DECIMALS)))}`);
+    // liquidator_cWBTC_bal = await cTokenSupply.balanceOf(liquidator.address);
+    // console.log(`liquidator cWBTC balance: ${liquidator_cWBTC_bal.div(String(pow(10, SUPPLY_DECIMALS)))}`);
 
-    console.log(`Liquidator WBTC balance: ${snap.liquidated}`);
-    console.log(`TestCompound WBTC balance: ${snap.supplied}`);
+    // console.log(`Liquidator WBTC balance: ${snap.liquidated}`);
+    // console.log(`TestCompound WBTC balance: ${snap.supplied}`);
 
-    testCompound_cDAI_balance = await cTokenSupply.balanceOf(testCompound.address);
-    console.log(`TestCompound cWBTC balance: ${testCompound_cDAI_balance.div(String(pow(10, SUPPLY_DECIMALS)))}`);
+    // testCompound_cDAI_balance = await cTokenSupply.balanceOf(testCompound.address);
+    // console.log(`TestCompound cWBTC balance: ${testCompound_cDAI_balance.div(String(pow(10, SUPPLY_DECIMALS)))}`);
   });
 });

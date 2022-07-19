@@ -40,7 +40,7 @@ const toWei = value => ethers.utils.parseEther(value.toString());
 const fromWei = value => ethers.utils.formatEther(typeof value === "string" ? value : value.toString());
 
 const fromWei8 = (decimals, value) => (value == 0 ? 0 : value / 10 ** decimals);
-const toWei8 = (decimals, value) => value * 10 ** decimals;
+const toWei8 = (decimals, value) => 10 ** decimals * value;
 
 const getBalance = ethers.provider.getBalance;
 
