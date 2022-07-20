@@ -80,7 +80,7 @@ const snapshot = async (testCompound, liquidator) => {
   const liquidated = await liquidator.callStatic.getSupplyBalance(C_TOKEN_SUPPLY);
 
   return {
-    colFactor: colFactor.div(String(pow(10, 18 - 1))),
+    colFactor: colFactor.div(String(pow(10, 18 - 2))),
     supplied: supplied.div(String(pow(10, SUPPLY_DECIMALS - 2))) / 100,
     borrowed: borrowed.div(String(pow(10, BORROW_DECIMALS - 2))) / 100,
     price: price.div(String(pow(10, 18 - 2))) / 100,

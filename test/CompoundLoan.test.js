@@ -13,17 +13,19 @@ const {expect} = require("chai");
 const {ethers, artifacts} = require("hardhat");
 const {createWriteStream} = require("fs");
 
-const WHALE = WBTC_WHALE;
-let SUPPLY_DECIMALS = 8;
-let BORROW_DECIMALS = 18;
-const SUPPLY_AMOUNT = String(pow(10, SUPPLY_DECIMALS).mul(new BN(1)));
-
+const WHALE = DAI_WHALE;
+let SUPPLY_DECIMALS = 18;
+let BORROW_DECIMALS = 8;
 const CTOKEN_DECIMALS = 8;
+const SUPPLY_AMOUNT = String(pow(10, SUPPLY_DECIMALS).mul(new BN(1000)));
 
-const TOKEN_SUPPLY = WBTC;
-const CTOKEN_SUPPLY = CWBTC;
-const TOKEN_BORROW = DAI;
-const CTOKEN_BORROW = CDAI;
+const TOKEN_SUPPLY = DAI;
+const CTOKEN_SUPPLY = CDAI;
+const TOKEN_BORROW = WBTC;
+const CTOKEN_BORROW = CWBTC;
+const MANTISSA = 18 + parseInt(SUPPLY_DECIMALS) - CTOKEN_DECIMALS;
+const SUPPLY_NAME = "DAI";
+const BORROW_NAME = "WBTC";
 
 let cTokenSupply, tokenSupply;
 let compoundLoan;
@@ -59,11 +61,11 @@ const snapshot = async CompoundLoan => {
   const {liquidity, shortfall} = await CompoundLoan.getAccountLiquidity();
 
   return {
-    colFactor: colFactor.div(String(pow(10, 18 - 2))),
+    colFactor: colFactor.div(String(pow(10, 18 - 2))), // get factor of 1, e.g 0.75
     supplied: supplied.div(String(pow(10, SUPPLY_DECIMALS - 2))) / 100,
     borrowed: borrowed.div(String(pow(10, BORROW_DECIMALS - 2))) / 100,
-    price: price.div(String(pow(10, BORROW_DECIMALS - 2))) / 100,
-    liquidity: liquidity.div(String(pow(10, 18))),
+    price: price.div(String(pow(10, MANTISSA - 4))) / 10000,
+    liquidity: liquidity.div(String(pow(10, 14))) / 10000, // to 4 decimal places
   };
 };
 
@@ -80,34 +82,35 @@ describe("Compound", function () {
 
     const exchangeRateCurrent = await cTokenSupply.callStatic.exchangeRateCurrent();
 
-    //oneCTokenInUnderlying = exchangeRateCurrent / ((1 * 10) ^ (18 + underlyingDecimals - CTOKEN_DECIMALS));
     const mantissa = 18 + parseInt(SUPPLY_DECIMALS) - CTOKEN_DECIMALS;
     const oneCTokenUnderlying = exchangeRateCurrent / Math.pow(10, mantissa);
-    console.log(`1 cWBTC = ${oneCTokenUnderlying} WBTC`);
+    console.log(`1 c${SUPPLY_NAME} = ${oneCTokenUnderlying} ${SUPPLY_NAME}`);
 
     await tokenSupply.connect(WHALE_SIGNER).approve(compoundLoan.address, SUPPLY_AMOUNT);
     (tx = await compoundLoan.connect(WHALE_SIGNER).supply(SUPPLY_AMOUNT)), {gasLimit: 500000};
     let snap = await snapshot(compoundLoan);
 
-    console.log(`supplied: ${snap.supplied} WBTC`);
+    console.log(`supplied: ${snap.supplied} ${SUPPLY_NAME}`);
     console.log(`colFactor ${snap.colFactor}%`);
-    console.log(`price: $${snap.price}`);
     console.log(`liquidity $${snap.liquidity}`);
     console.log(``);
 
     // enter markets
     tx = await compoundLoan.connect(deployer).enterMarket();
-
+    snap = await snapshot(compoundLoan);
     // borrow
-    const {liquidity} = await compoundLoan.getAccountLiquidity();
-    const price = await compoundLoan.getPriceFeed(CTOKEN_BORROW);
-    const maxBorrow = liquidity.mul(String(pow(10, mantissa))).div(price);
-    const borrowAmount = maxBorrow.mul(9990).div(10000);
+    // const {liquidity} = await compoundLoan.getAccountLiquidity();
+    // let price = await compoundLoan.getPriceFeed(CTOKEN_BORROW);
+    const maxBorrow = snap.liquidity / snap.price;
+    const borrowAmount = (maxBorrow * 9990) / 10000;
+
+    // const maxBorrow = liquidity.mul(String(pow(10, 14))).div(price);
+    //const borrowAmount = maxBorrow.mul(9990).div(10000);
 
     console.log("----- entered market -----");
-    console.log(`liquidity: $${liquidity.div(String(pow(10, 18)))}`);
-    console.log(`price: $${price.div(String(pow(10, 18)))}`);
-    console.log(`max borrow $${maxBorrow.div(String(pow(10, mantissa)))}`);
-    console.log(`borrow amount: $${borrowAmount.div(String(pow(10, mantissa)))}`);
+    console.log(`liquidity: $${snap.liquidity}`);
+    console.log(`${BORROW_NAME} price: $${snap.price}`);
+    console.log(`max borrow ${maxBorrow} ${BORROW_NAME}`);
+    console.log(`borrow amount: ${borrowAmount} ${BORROW_NAME}`);
   });
 });
