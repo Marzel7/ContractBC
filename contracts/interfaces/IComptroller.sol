@@ -24,6 +24,8 @@ interface IComptroller {
             uint256
         );
 
+    function getAssetsIn(address account) external returns (address[] memory);
+
     function closeFactorMantissa() external view returns (uint256);
 
     function liquidationIncentiveMantissa() external view returns (uint256);

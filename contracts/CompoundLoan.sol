@@ -63,7 +63,7 @@ contract CompoundLoan {
     }
 
     function getBorrowBalance() external returns (uint256) {
-        return cTokenSupply.borrowBalanceCurrent(address(this));
+        return cTokenBorrow.borrowBalanceCurrent(address(this));
     }
 
     function getPriceFeed(address _cToken) external view returns (uint256) {
@@ -75,14 +75,21 @@ contract CompoundLoan {
         view
         returns (uint256 liquidity, uint256 shortfall)
     {
-        // scaled up by 1e18
+        // liquidity and shortfall in USD scaled up by 1e18
         (uint256 error, uint256 _liquidity, uint256 _shortfall) = comptroller
             .getAccountLiquidity(address(this));
         require(error == 0, "error");
         return (_liquidity, _shortfall);
     }
 
-    function borrow(uint256 _amount) external payable {}
+    function borrow(uint256 _amount) external {
+        require(cTokenBorrow.borrow(_amount) == 0, "borrow failed");
+    }
+
+    function getAssetsIn(address _account) external returns (address[] memory) {
+        address[] memory markets = comptroller.getAssetsIn(_account);
+        return (markets);
+    }
 
     receive() external payable {}
 }
