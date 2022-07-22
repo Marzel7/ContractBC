@@ -24,6 +24,8 @@ interface ICErc20 {
 
     function repayBorrow(uint256) external returns (uint256);
 
+    function getCash() external view returns (uint256);
+
     function liquidateBorrow(
         address borrower,
         uint256 amount,

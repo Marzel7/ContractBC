@@ -7,6 +7,7 @@ import "./interfaces/ICErc20.sol";
 import "./interfaces/IUniswap.sol";
 import "./interfaces/IComptroller.sol";
 import "./interfaces/IPriceFeed.sol";
+import "hardhat/console.sol";
 
 contract CompoundLoan {
     IERC20 public tokenSupply;
@@ -89,6 +90,11 @@ contract CompoundLoan {
     function getAssetsIn(address _account) external returns (address[] memory) {
         address[] memory markets = comptroller.getAssetsIn(_account);
         return (markets);
+    }
+
+    function getCash() external view returns (uint256) {
+        uint256 cash = cTokenBorrow.getCash();
+        return cash;
     }
 
     receive() external payable {}

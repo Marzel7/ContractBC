@@ -115,7 +115,7 @@ describe("liquidation", async () => {
     const price = await testCompound.getPriceFeed(C_TOKEN_BORROW);
     const maxBorrow = liquidity.mul(String(pow(10, BORROW_DECIMALS))).div(price);
     // tweak borrow amount if borrow fails
-    const borrowAmount = maxBorrow.mul(9996).div(10000);
+    const borrowAmount = maxBorrow.mul(9997).div(10000);
 
     console.log("----- entered market -----");
     console.log(`liquidity: $${liquidity.div(String(pow(10, 18)))}`);
@@ -131,17 +131,17 @@ describe("liquidation", async () => {
     console.log(`borrowed: $${snap.borrowed}`);
 
     // accrue interest on borrow
-    // const block = await web3.eth.getBlockNumber();
-    // // NOTE: tweak this to increase borrowed amount
-    // await time.advanceBlockTo(block + 120000);
-    // // send any tx to Compound to update liquidity and shortfall
-    // await testCompound.getBorrowBalance();
+    const block = await web3.eth.getBlockNumber();
+    // NOTE: tweak this to increase borrowed amount
+    await time.advanceBlockTo(block + 120000);
+    // send any tx to Compound to update liquidity and shortfall
+    await testCompound.getBorrowBalance();
 
-    // snap = await snapshot(testCompound, liquidator);
-    // console.log(`--- after some blocks ---`);
-    // console.log(`liquidity: $${snap.liquidity}`);
-    // console.log(`shortfall: $${snap.shortfall}`);
-    // console.log(`borrowed: $${snap.borrowed}`);
+    snap = await snapshot(testCompound, liquidator);
+    console.log(`--- after some blocks ---`);
+    console.log(`liquidity: $${snap.liquidity}`);
+    console.log(`shortfall: $${snap.shortfall}`);
+    console.log(`borrowed: $${snap.borrowed}`);
 
     // // liquidate
     // const closeFactor = await liquidator.getCloseFactor();
